@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教採ドットコム - β版</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>教採ドットコム</h1>
+        <p>教員採用試験 過去問演習</p>
+    </header>
+
+    <main id="app">
+        <div id="start-screen" class="screen active">
+            <h2>出題条件を設定</h2>
+            
+            <div class="filter-group">
+                <h3>カテゴリー</h3>
+                <label><input type="checkbox" name="category" value="教職教養" checked> 教職教養</label>
+                <label><input type="checkbox" name="category" value="一般教養" checked> 一般教養</label>
+            </div>
+
+            <div class="filter-group">
+                <h3>都道府県</h3>
+                <label><input type="checkbox" name="prefecture" value="東京都" checked> 東京都</label>
+                <label><input type="checkbox" name="prefecture" value="大阪府" checked> 大阪府</label>
+                <label><input type="checkbox" name="prefecture" value="北海道" checked> 北海道</label>
+            </div>
+
+            <button onclick="startQuiz()">出題開始</button>
+        </div>
+
+        <div id="quiz-screen" class="screen">
+            <div class="status-bar">
+                <span>残り: <span id="remaining-count">0</span>問</span>
+                <span>正答率: <span id="current-accuracy">0</span>%</span>
+            </div>
+            
+            <div id="question-container">
+                <div class="question-meta">
+                    <span id="q-pref" class="badge"></span>
+                    <span id="q-cat" class="badge"></span>
+                </div>
+                <p id="q-text">問題文がここに表示されます</p>
+                <div id="options-container"></div>
+            </div>
+
+            <div id="feedback" class="hidden">
+                <h3 id="feedback-title"></h3>
+                <p id="feedback-explanation"></p>
+                <button onclick="nextQuestion()" id="next-btn">次の問題へ</button>
+            </div>
+        </div>
+
+        <div id="result-screen" class="screen">
+            <h2>結果発表</h2>
+            <div class="result-score">
+                <p>正解数: <span id="result-correct"></span> / <span id="result-total"></span></p>
+                <p class="accuracy">正答率: <span id="result-rate"></span>%</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button onclick="retryWrong()" id="retry-btn" style="display:none;">間違えた問題を解き直す</button>
+                <button onclick="location.reload()" class="secondary">トップに戻る</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
