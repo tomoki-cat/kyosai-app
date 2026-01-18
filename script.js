@@ -1,76 +1,97 @@
-// サンプル問題データ（本来はデータベースから取得しますが、今はここに書きます）
-const allQuestions = [
-    {
-        id: 1,
-        category: "教職教養",
-        prefecture: "東京都",
-        text: "日本国憲法第26条において、すべて国民は、法律の定めるところにより、その能力に応じて、ひとしく何を受ける権利を有するか。",
-        options: ["教育", "生活保護", "勤労の機会", "財産権"],
-        answer: 0, // 0番目(教育)が正解
-        explanation: "正解は「教育」です。日本国憲法第26条第1項の規定です。"
-    },
-    {
-        id: 2,
-        category: "教職教養",
-        prefecture: "大阪府",
-        text: "学習指導要領の法的拘束力について、判例（伝習館高校事件）はどのように解しているか。",
-        options: ["法的拘束力はない", "大綱的基準としての法的拘束力がある", "完全な法的拘束力がある", "単なる助言に過ぎない"],
-        answer: 1,
-        explanation: "最高裁は、学習指導要領には「大綱的基準」としての法的拘束力があるとしています。"
-    },
-    {
-        id: 3,
-        category: "一般教養",
-        prefecture: "北海道",
-        text: "次のうち、夏目漱石の作品ではないものはどれか。",
-        options: ["こころ", "坊っちゃん", "舞姫", "吾輩は猫である"],
-        answer: 2,
-        explanation: "「舞姫」は森鴎外の作品です。"
+// ▼▼▼ ここを先ほどメモした自分のものに書き換えてください ▼▼▼
+// （例: const SUPABASE_URL = 'https://abcdefg.supabase.co';）
+const SUPABASE_URL = 'https://wgvcgzeaqtrteolxsplj.supabase.co'; 
+
+// （例: const SUPABASE_KEY = 'eyJh...';）
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndndmNnemVhcXRydGVvbHhzcGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODEyMTEsImV4cCI6MjA4MTg1NzIxMX0.pYCOptVf_AR7qs1vzshnhPes80f6p8WD3yopSS1t_6s'; 
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
+
+// データベースから問題を取得する関数
+async function fetchQuestions(categories, prefectures) {
+    // URLを作成（条件を指定してデータを取るための魔法のURL）
+    let url = `${SUPABASE_URL}/rest/v1/questions?select=*`;
+    
+    // カテゴリ: A or B (カンマ区切りで指定)
+    if (categories.length > 0) {
+        // "in" フィルタを使うための形式: ("教職教養","一般教養")
+        const catStr = categories.map(c => `"${c}"`).join(',');
+        url += `&category=in.(${catStr})`;
     }
-];
+    
+    // 都道府県: A or B
+    if (prefectures.length > 0) {
+        const prefStr = prefectures.map(p => `"${p}"`).join(',');
+        url += `&prefecture=in.(${prefStr})`;
+    }
+
+    // データを取得
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+        });
+
+        if (!response.ok) {
+            console.error("データ取得エラー:", response.statusText);
+            alert("問題の読み込みに失敗しました。URLかキーが間違っている可能性があります。");
+            return [];
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("通信エラー:", error);
+        alert("通信エラーが発生しました。");
+        return [];
+    }
+}
+
+// --- 以下、クイズの基本動作 ---
 
 let currentQuestions = [];
 let currentIndex = 0;
 let correctCount = 0;
-let wrongQuestions = []; // 間違えた問題を保存するリスト
+let wrongQuestions = [];
 
-// 画面切り替え用関数
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
 }
 
-// 出題開始ボタン
-function startQuiz() {
-    // 選択されたチェックボックスの値を取得
+// ★ここが変わりました：非同期処理（async/await）になりました
+async function startQuiz() {
+    const startBtn = document.querySelector('#start-screen button');
+    startBtn.disabled = true;
+    startBtn.textContent = "問題を読み込み中..."; // 通信中であることを表示
+
     const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value);
     const selectedPrefs = Array.from(document.querySelectorAll('input[name="prefecture"]:checked')).map(e => e.value);
 
-    // 条件に合う問題を抽出
-    currentQuestions = allQuestions.filter(q => 
-        selectedCats.includes(q.category) && selectedPrefs.includes(q.prefecture)
-    );
+    // データベースから問題を取ってくる！
+    currentQuestions = await fetchQuestions(selectedCats, selectedPrefs);
+
+    startBtn.disabled = false;
+    startBtn.textContent = "出題開始";
 
     if (currentQuestions.length === 0) {
-        alert("条件に合う問題がありませんでした。");
+        alert("条件に合う問題がまだ登録されていません。");
         return;
     }
 
-    // 変数を初期化
     currentIndex = 0;
     correctCount = 0;
     wrongQuestions = [];
     
-    // クイズ画面へ
     showScreen('quiz-screen');
     loadQuestion();
 }
 
-// 問題を表示する
 function loadQuestion() {
     const q = currentQuestions[currentIndex];
     
-    // 画面表示の更新
     document.getElementById('remaining-count').textContent = currentQuestions.length - currentIndex;
     const rate = currentIndex === 0 ? 0 : Math.round((correctCount / currentIndex) * 100);
     document.getElementById('current-accuracy').textContent = rate;
@@ -79,11 +100,11 @@ function loadQuestion() {
     document.getElementById('q-cat').textContent = q.category;
     document.getElementById('q-text').textContent = q.text;
 
-    // 選択肢ボタンの生成
     const optionsContainer = document.getElementById('options-container');
-    optionsContainer.innerHTML = ''; // 前の選択肢を消す
-    document.getElementById('feedback').classList.add('hidden'); // 解説を隠す
+    optionsContainer.innerHTML = '';
+    document.getElementById('feedback').classList.add('hidden');
 
+    // 選択肢を表示（SupabaseからはJSONとして来るのでそのまま使えます）
     q.options.forEach((option, index) => {
         const btn = document.createElement('button');
         btn.textContent = option;
@@ -93,9 +114,7 @@ function loadQuestion() {
     });
 }
 
-// 答え合わせ
 function checkAnswer(selectedIndex, clickedBtn) {
-    // ボタンを無効化（連打防止）
     const buttons = document.querySelectorAll('.option-btn');
     buttons.forEach(b => b.disabled = true);
 
@@ -109,12 +128,9 @@ function checkAnswer(selectedIndex, clickedBtn) {
         correctCount++;
     } else {
         clickedBtn.classList.add('incorrect');
-        // 正解のボタンも光らせる
         buttons[q.answer].classList.add('correct');
         document.getElementById('feedback-title').textContent = "不正解...";
         document.getElementById('feedback-title').style.color = "red";
-        
-        // 間違えた問題をリストに追加
         wrongQuestions.push(q);
     }
 
@@ -122,7 +138,6 @@ function checkAnswer(selectedIndex, clickedBtn) {
     document.getElementById('feedback').classList.remove('hidden');
 }
 
-// 次の問題へ
 function nextQuestion() {
     currentIndex++;
     if (currentIndex < currentQuestions.length) {
@@ -132,12 +147,15 @@ function nextQuestion() {
     }
 }
 
-// 結果表示
 function showResult() {
     showScreen('result-screen');
     document.getElementById('result-correct').textContent = correctCount;
     document.getElementById('result-total').textContent = currentQuestions.length;
-    document.getElementById('result-rate').textContent = Math.round((correctCount / currentQuestions.length) * 100);
+    
+    // 0で割るエラーを防ぐ
+    const total = currentQuestions.length;
+    const rate = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+    document.getElementById('result-rate').textContent = rate;
 
     const retryBtn = document.getElementById('retry-btn');
     if (wrongQuestions.length > 0) {
@@ -147,12 +165,11 @@ function showResult() {
     }
 }
 
-// 間違えた問題だけ再挑戦
 function retryWrong() {
-    currentQuestions = [...wrongQuestions]; // 間違えた問題リストをコピーして現在の問題セットにする
+    currentQuestions = [...wrongQuestions];
     currentIndex = 0;
     correctCount = 0;
-    wrongQuestions = []; // さらに間違えた場合のために空にする
+    wrongQuestions = [];
     showScreen('quiz-screen');
     loadQuestion();
 }
