@@ -62,15 +62,29 @@ function showScreen(screenId) {
 }
 
 // ★ここが変わりました：非同期処理（async/await）になりました
+// 出題開始ボタンを押したときの処理
 async function startQuiz() {
     const startBtn = document.querySelector('#start-screen button');
-    startBtn.disabled = true;
-    startBtn.textContent = "問題を読み込み中..."; // 通信中であることを表示
-
+    
+    // チェックボックスの状態を取得
     const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value);
     const selectedPrefs = Array.from(document.querySelectorAll('input[name="prefecture"]:checked')).map(e => e.value);
 
-    // データベースから問題を取ってくる！
+    // ★追加した部分：もしチェックがゼロなら、ここで止める
+    if (selectedCats.length === 0) {
+        alert("カテゴリーを少なくとも1つ選択してください。");
+        return;
+    }
+    if (selectedPrefs.length === 0) {
+        alert("都道府県を少なくとも1つ選択してください。");
+        return;
+    }
+
+    // ここから下は今までと同じですが、ボタンの制御を微調整しました
+    startBtn.disabled = true;
+    startBtn.textContent = "問題を読み込み中...";
+
+    // データベースから問題を取ってくる
     currentQuestions = await fetchQuestions(selectedCats, selectedPrefs);
 
     startBtn.disabled = false;
