@@ -1,9 +1,9 @@
 // ▼▼▼ ここを先ほどメモした自分のものに書き換えてください ▼▼▼
 // （例: const SUPABASE_URL = 'https://abcdefg.supabase.co';）
-const SUPABASE_URL = 'https://wgvcgzeaqtrteolxsplj.supabase.co'; 
+const SUPABASE_URL = 'https://wgvcgzeaqtrteolxsplj.supabase.co';
 
 // （例: const SUPABASE_KEY = 'eyJh...';）
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndndmNnemVhcXRydGVvbHhzcGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODEyMTEsImV4cCI6MjA4MTg1NzIxMX0.pYCOptVf_AR7qs1vzshnhPes80f6p8WD3yopSS1t_6s'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndndmNnemVhcXRydGVvbHhzcGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyODEyMTEsImV4cCI6MjA4MTg1NzIxMX0.pYCOptVf_AR7qs1vzshnhPes80f6p8WD3yopSS1t_6s';
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 
@@ -11,13 +11,13 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 async function fetchQuestions(categories, prefectures, years) { // ←引数にyearsを追加
     // URLを作成
     let url = `${SUPABASE_URL}/rest/v1/questions?select=*`;
-    
+
     // カテゴリフィルタ
     if (categories.length > 0) {
         const catStr = categories.map(c => `"${c}"`).join(',');
         url += `&category=in.(${catStr})`;
     }
-    
+
     // 都道府県フィルタ
     if (prefectures.length > 0) {
         const prefStr = prefectures.map(p => `"${p}"`).join(',');
@@ -69,8 +69,9 @@ function showScreen(screenId) {
 // ★ここが変わりました：非同期処理（async/await）になりました
 // 出題開始ボタンの処理（年度にも対応版）
 async function startQuiz() {
-    const startBtn = document.querySelector('#start-screen button');
-    
+    // IDを使って直接ボタンを指定します
+    const startBtn = document.getElementById('start-quiz-btn');
+
     // チェックボックスの状態を取得
     const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value);
     const selectedPrefs = Array.from(document.querySelectorAll('input[name="prefecture"]:checked')).map(e => e.value);
@@ -109,21 +110,21 @@ async function startQuiz() {
     currentIndex = 0;
     correctCount = 0;
     wrongQuestions = [];
-    
+
     showScreen('quiz-screen');
     loadQuestion();
 }
 
 function loadQuestion() {
     const q = currentQuestions[currentIndex];
-    
+
     document.getElementById('remaining-count').textContent = currentQuestions.length - currentIndex;
     const rate = currentIndex === 0 ? 0 : Math.round((correctCount / currentIndex) * 100);
     document.getElementById('current-accuracy').textContent = rate;
 
     // ★ここを追加しました：年度を表示する処理
     // もし年度データがあれば「2024年度」のように表示、なければ空欄にする
-    const yearText = q.year ? `${q.year}年度` : '-'; 
+    const yearText = q.year ? `${q.year}年度` : '-';
     document.getElementById('q-year').textContent = yearText;
 
     document.getElementById('q-pref').textContent = q.prefecture;
@@ -180,7 +181,7 @@ function showResult() {
     showScreen('result-screen');
     document.getElementById('result-correct').textContent = correctCount;
     document.getElementById('result-total').textContent = currentQuestions.length;
-    
+
     // 0で割るエラーを防ぐ
     const total = currentQuestions.length;
     const rate = total === 0 ? 0 : Math.round((correctCount / total) * 100);
