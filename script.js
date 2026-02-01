@@ -7,22 +7,27 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 
-// データベースから問題を取得する関数
-async function fetchQuestions(categories, prefectures) {
-    // URLを作成（条件を指定してデータを取るための魔法のURL）
+// データベースから問題を取得する関数（年度にも対応版）
+async function fetchQuestions(categories, prefectures, years) { // ←引数にyearsを追加
+    // URLを作成
     let url = `${SUPABASE_URL}/rest/v1/questions?select=*`;
     
-    // カテゴリ: A or B (カンマ区切りで指定)
+    // カテゴリフィルタ
     if (categories.length > 0) {
-        // "in" フィルタを使うための形式: ("教職教養","一般教養")
         const catStr = categories.map(c => `"${c}"`).join(',');
         url += `&category=in.(${catStr})`;
     }
     
-    // 都道府県: A or B
+    // 都道府県フィルタ
     if (prefectures.length > 0) {
         const prefStr = prefectures.map(p => `"${p}"`).join(',');
         url += `&prefecture=in.(${prefStr})`;
+    }
+
+    // ★追加：年度フィルタ
+    if (years.length > 0) {
+        const yearStr = years.map(y => `"${y}"`).join(',');
+        url += `&year=in.(${yearStr})`;
     }
 
     // データを取得
@@ -36,7 +41,7 @@ async function fetchQuestions(categories, prefectures) {
 
         if (!response.ok) {
             console.error("データ取得エラー:", response.statusText);
-            alert("問題の読み込みに失敗しました。URLかキーが間違っている可能性があります。");
+            alert("問題の読み込みに失敗しました。");
             return [];
         }
 
@@ -62,15 +67,17 @@ function showScreen(screenId) {
 }
 
 // ★ここが変わりました：非同期処理（async/await）になりました
-// 出題開始ボタンを押したときの処理
+// 出題開始ボタンの処理（年度にも対応版）
 async function startQuiz() {
     const startBtn = document.querySelector('#start-screen button');
     
     // チェックボックスの状態を取得
     const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value);
     const selectedPrefs = Array.from(document.querySelectorAll('input[name="prefecture"]:checked')).map(e => e.value);
+    // ★追加：年度のチェック状態を取得
+    const selectedYears = Array.from(document.querySelectorAll('input[name="year"]:checked')).map(e => e.value);
 
-    // ★追加した部分：もしチェックがゼロなら、ここで止める
+    // チェック漏れの確認
     if (selectedCats.length === 0) {
         alert("カテゴリーを少なくとも1つ選択してください。");
         return;
@@ -79,19 +86,23 @@ async function startQuiz() {
         alert("都道府県を少なくとも1つ選択してください。");
         return;
     }
+    // ★追加：年度のチェック漏れ確認
+    if (selectedYears.length === 0) {
+        alert("実施年度を少なくとも1つ選択してください。");
+        return;
+    }
 
-    // ここから下は今までと同じですが、ボタンの制御を微調整しました
     startBtn.disabled = true;
     startBtn.textContent = "問題を読み込み中...";
 
-    // データベースから問題を取ってくる
-    currentQuestions = await fetchQuestions(selectedCats, selectedPrefs);
+    // データベースから問題を取ってくる（yearsも渡す）
+    currentQuestions = await fetchQuestions(selectedCats, selectedPrefs, selectedYears);
 
     startBtn.disabled = false;
     startBtn.textContent = "出題開始";
 
     if (currentQuestions.length === 0) {
-        alert("条件に合う問題がまだ登録されていません。");
+        alert("条件に合う問題が見つかりませんでした。");
         return;
     }
 

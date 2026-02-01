@@ -18,6 +18,14 @@
         <div id="start-screen" class="screen active">
             <h2>出題条件を設定</h2>
 
+
+            <div class="filter-group">
+                <h3>実施年度</h3>
+                <label><input type="checkbox" name="year" value="2026" checked> 2026年度</label>
+                <label><input type="checkbox" name="year" value="2025" checked> 2025年度</label>
+                <label><input type="checkbox" name="year" value="2024" checked> 2024年度</label>
+                <label><input type="checkbox" name="year" value="2023" checked> 2023年度</label>
+            </div>
             <div class="filter-group">
                 <h3>カテゴリー</h3>
                 <label><input type="checkbox" name="category" value="教職教養" checked> 教職教養</label>
@@ -31,7 +39,11 @@
                 <label><input type="checkbox" name="prefecture" value="北海道" checked> 北海道</label>
             </div>
 
-            <button onclick="startQuiz()">出題開始</button>
+        </div>
+
+
+
+        <button onclick="startQuiz()">出題開始</button>
         </div>
 
         <div id="quiz-screen" class="screen">
