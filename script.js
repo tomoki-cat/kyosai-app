@@ -110,6 +110,11 @@ function loadQuestion() {
     const rate = currentIndex === 0 ? 0 : Math.round((correctCount / currentIndex) * 100);
     document.getElementById('current-accuracy').textContent = rate;
 
+    // ★ここを追加しました：年度を表示する処理
+    // もし年度データがあれば「2024年度」のように表示、なければ空欄にする
+    const yearText = q.year ? `${q.year}年度` : '-'; 
+    document.getElementById('q-year').textContent = yearText;
+
     document.getElementById('q-pref').textContent = q.prefecture;
     document.getElementById('q-cat').textContent = q.category;
     document.getElementById('q-text').textContent = q.text;
@@ -118,7 +123,6 @@ function loadQuestion() {
     optionsContainer.innerHTML = '';
     document.getElementById('feedback').classList.add('hidden');
 
-    // 選択肢を表示（SupabaseからはJSONとして来るのでそのまま使えます）
     q.options.forEach((option, index) => {
         const btn = document.createElement('button');
         btn.textContent = option;

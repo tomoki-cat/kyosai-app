@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>教採ドットコム - β版</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <header>
         <h1>教採ドットコム</h1>
@@ -15,7 +17,7 @@
     <main id="app">
         <div id="start-screen" class="screen active">
             <h2>出題条件を設定</h2>
-            
+
             <div class="filter-group">
                 <h3>カテゴリー</h3>
                 <label><input type="checkbox" name="category" value="教職教養" checked> 教職教養</label>
@@ -37,10 +39,11 @@
                 <span>残り: <span id="remaining-count">0</span>問</span>
                 <span>正答率: <span id="current-accuracy">0</span>%</span>
             </div>
-            
+
             <div id="question-container">
                 <div class="question-meta">
-                    <span id="q-pref" class="badge"></span>
+                    <span id="q-year" class="badge" style="background-color: #f39c12; color: white;"></span> <span
+                        id="q-pref" class="badge"></span>
                     <span id="q-cat" class="badge"></span>
                 </div>
                 <p id="q-text">問題文がここに表示されます</p>
@@ -60,7 +63,7 @@
                 <p>正解数: <span id="result-correct"></span> / <span id="result-total"></span></p>
                 <p class="accuracy">正答率: <span id="result-rate"></span>%</p>
             </div>
-            
+
             <div class="action-buttons">
                 <button onclick="retryWrong()" id="retry-btn" style="display:none;">間違えた問題を解き直す</button>
                 <button onclick="location.reload()" class="secondary">トップに戻る</button>
@@ -70,4 +73,5 @@
 
     <script src="script.js"></script>
 </body>
+
 </html>
