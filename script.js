@@ -69,7 +69,15 @@ function showScreen(screenId) {
 // ★ここが変わりました：非同期処理（async/await）になりました
 // 出題開始ボタンの処理（年度にも対応版）
 async function startQuiz() {
-    const startBtn = document.querySelector('#start-screen button');
+    // IDでボタンを直接取得するように変更
+    const startBtn = document.getElementById('start-quiz-btn');
+    
+    // もしボタンが見つからなかった時のための安全策
+    if (!startBtn) {
+        console.error("ボタンが見つかりません。HTMLのIDを確認してください。");
+    }
+
+    // ...以下、チェックボックスの取得などはそのまま
     
     // チェックボックスの状態を取得
     const selectedCats = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(e => e.value);
